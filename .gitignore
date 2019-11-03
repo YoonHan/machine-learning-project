@@ -1,0 +1,3 @@
+*.lo
+.DS_Store
+/data/
