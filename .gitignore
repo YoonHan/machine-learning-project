@@ -1,3 +1,4 @@
 *.lo
 .DS_Store
 /data/
+.idea
