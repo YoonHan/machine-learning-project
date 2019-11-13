@@ -1,9 +1,7 @@
 import os
 import torch
 import pandas as pd
-import matplotlib.pyplot as plt
 from PIL import Image
-from skimage import io, color
 from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms
 
@@ -19,9 +17,7 @@ class PaintingDataset(Dataset):
             idx = idx.tolist()
 
         painting_path = os.path.join(self.root_dir, self.painting_frame.iloc[idx, 0])
-        # painting = io.imread(painting_path)
         painting = Image.open(painting_path).convert('RGB')
-        # painting = color.gray2rgb(painting)     # Convert gray scale to rgb
 
         sample = {'painting': painting, 'label': self.painting_frame.iloc[idx, 1]}
 
@@ -34,16 +30,27 @@ class PaintingDataset(Dataset):
         return len(self.painting_frame)
 
 
+def show_batch(batch_idx, sample_batched):
+    """Show image for batch of samples."""
+    print(f'batch #{batch_idx}')
+    paintings_batch, label_batch = sample_batched['painting'], sample_batched['label']
+    print(paintings_batch.size())
+
+
+
 painting_dataset = PaintingDataset(csv_file_path='./painting_label.csv',
                                    root_dir='../data/training/',
                                    transform=transforms.Compose([
                                        transforms.Resize((256, 256)),
                                        transforms.ToTensor(),
+                                       transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
                                    ]))
 
-for i in range(len(painting_dataset)):
-    sample = painting_dataset[i]
-    print(sample)
+painting_dataloader = DataLoader(painting_dataset, batch_size=32)
 
-    if i == 3:
+for batch_idx, sample_batched in enumerate(painting_dataloader):
+    show_batch(batch_idx, sample_batched)
+
+    if batch_idx == 8:
         break
+
