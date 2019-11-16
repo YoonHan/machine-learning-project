@@ -10,7 +10,7 @@ painting_fnames.sort()
 # get painter names
 painter_names = [n for n in listdir(PAINTER_FOLDER) if n != '.DS_Store']
 painter_names.sort()
-painter_label = {n: l + 1 for l, n in enumerate(painter_names)}
+painter_label = {n: l for l, n in enumerate(painter_names)}
 
 # create csv file
 f = open('painting_label.csv', 'w')
