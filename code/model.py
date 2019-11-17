@@ -38,7 +38,7 @@ painting_dataset = PaintingDataset(csv_file_path='./painting_label.csv',
                                    root_dir='../data/training/',
                                    transform=transforms.Compose([
                                        transforms.Resize((256, 256)),
-                                       transforms.ToTensor(),
+                                       transforms.ToTensor(ㄴ),
                                    ]))
 
 for i in range(len(painting_dataset)):
@@ -47,3 +47,7 @@ for i in range(len(painting_dataset)):
 
     if i == 3:
         break
+
+
+
+# 재민 push 테스트
