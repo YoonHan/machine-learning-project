@@ -93,7 +93,7 @@ if __name__ == '__main__':
             # forward -> backward -> gradient update(optimization)
             output = net(input)
             # print('output shape:', output.shape)
-            # print('label:', label.shape)
+            print('label:', label)
             l = loss(output, label)
             l.backward()
             optimizer.step()
