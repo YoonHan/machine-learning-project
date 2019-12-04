@@ -3,3 +3,4 @@
 /data/
 .idea
 /code/test.py
+/code/__pycache__/
