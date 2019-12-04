@@ -9,6 +9,8 @@ from PIL import Image
 from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms
 
+from CrossEntropy import CrossEntropyLoss
+
 BATCH_SIZE = 1
 
 class PaintingDataset(Dataset):
@@ -54,6 +56,14 @@ class Net(nn.Module):
         x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))
         x = self.fc3(x)
+        # print(self.conv1.weight)
+        # print(self.conv2.weight)
+        # print(self.fc1.weight)
+        # print(self.fc1.bias)
+        # print(self.fc2.weight)
+        # print(self.fc2.bias)
+        # print(self.fc3.weight)
+        # print(self.fc3.bias)
         return x
 
 
@@ -69,30 +79,35 @@ painting_dataset = PaintingDataset(csv_file_path='./painting_label.csv',
                                    transform=transforms.Compose([
                                        transforms.Resize((224, 224)),
                                        transforms.ToTensor(),
-                                       transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
+                                       transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.2, 0.2, 0.2])
                                    ]))
 
 trainloader = DataLoader(painting_dataset, batch_size=BATCH_SIZE, shuffle=True)
 
 if __name__ == '__main__':
     net = Net()
-    loss = nn.CrossEntropyLoss()
-    optimizer = optim.SGD(net.parameters(), lr=0.001, momentum=0.9)
+    # loss = nn.CrossEntropyLoss()
+    # cw = torch.randn(30, 1)
+    loss = CrossEntropyLoss()
+    optimizer = optim.SGD(net.parameters(), lr=0.0001, momentum=0.9)
 
     for epoch in range(1):
         print('Epoch %d ...' % (epoch + 1))
         running_loss = 0.0
         for i, data in enumerate(trainloader):
             # input data
-            print(f'batch(image)#{i + 1} processing...')
-            input, label = data['painting'], data['label'].view(1)
+            print(f'batch #{i + 1} processing...')
+            input, label = data['painting'], data['label'].view(BATCH_SIZE)
             # print('input shape:', input.shape)
             # initialize gradient
             optimizer.zero_grad
 
             # forward -> backward -> gradient update(optimization)
+            print('input:', input)
             output = net(input)
+
             # print('output shape:', output.shape)
+            # print('output: ', output)
             print('label:', label)
             l = loss(output, label)
             l.backward()
