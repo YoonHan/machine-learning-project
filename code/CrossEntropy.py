@@ -9,7 +9,7 @@ class CrossEntropyLoss(nn.Module):
 
     NOTE: Computes per-element losses for a mini-batch (instead of the average loss over the entire mini-batch).
     """
-    log_softmax = nn.LogSoftmax()
+    log_softmax = nn.LogSoftmax(dim=1)
 
     # def __init__(self, class_weights):
     #     super().__init__()
