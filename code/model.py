@@ -10,6 +10,7 @@ from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms
 
 from CrossEntropy import CrossEntropyLoss
+from AdamGrad import ADAMOptimizer
 
 BATCH_SIZE = 1
 
@@ -74,22 +75,32 @@ def print_batch(batch_idx, s_batched):
     print(paintings_batch.size())
 
 
-painting_dataset = PaintingDataset(csv_file_path='./painting_label.csv',
+training_painting_dataset = PaintingDataset(csv_file_path='./training_painting_label.csv',
                                    root_dir='../data/training/',
                                    transform=transforms.Compose([
                                        transforms.Resize((224, 224)),
                                        transforms.ToTensor(),
                                        transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.2, 0.2, 0.2])
                                    ]))
+testing_painting_dataset = PaintingDataset(csv_file_path='./testing_painting_label.csv',
+                                           root_dir='../data/testing/',
+                                           transform=transforms.Compose([
+                                               transforms.Resize((224, 224)),
+                                               transforms.ToTensor(),
+                                               transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.2, 0.2, 0.2])
+                                           ]))
 
-trainloader = DataLoader(painting_dataset, batch_size=BATCH_SIZE, shuffle=True)
+trainloader = DataLoader(training_painting_dataset, batch_size=BATCH_SIZE, shuffle=True)
+testloader = DataLoader(testing_painting_dataset)
+
 
 if __name__ == '__main__':
     net = Net()
     # loss = nn.CrossEntropyLoss()
     # cw = torch.randn(30, 1)
     loss = CrossEntropyLoss()
-    optimizer = optim.SGD(net.parameters(), lr=0.0001, momentum=0.9)
+    # optimizer = optim.SGD(net.parameters(), lr=0.0001, momentum=0.9)
+    optimizer = ADAMOptimizer(net.parameters())
 
     for epoch in range(1):
         print('Epoch %d ...' % (epoch + 1))
@@ -105,9 +116,9 @@ if __name__ == '__main__':
             # forward -> backward -> gradient update(optimization)
             print('input:', input)
             output = net(input)
+            print(output)
 
             # print('output shape:', output.shape)
-            # print('output: ', output)
             print('label:', label)
             l = loss(output, label)
             l.backward()
@@ -115,9 +126,35 @@ if __name__ == '__main__':
 
             # printing process
             running_loss += l.item()
+
             if i % 1 == 0:
                 print('[%d, %5d] loss: %.8f' %
                       (epoch + 1, i + 1, l.item()))
                 # running_loss = 0.0
 
+    # test cycle
+    print('NOW TESTING...')
+    total = len(trainloader)    # 데이터 총 개수
+    right = 0                   # 맞춘 데이터 총 개수
+    res_f = open('test_result.csv', 'w')
+    res_f.write('PREDICTION, GROUND TRUTH\n')
+    for i, data in enumerate(testloader):
+        input, label = data['painting'], data['label'].view(BATCH_SIZE)
+        pred = net(input).view(30).max(0)[1].data
+        if (int(label.data) == int(pred)):
+            print(f'{int(label.data)}, {int(pred)}')
+            res_f.write(f'{int(label.data)}, {int(pred)}\n')
+            right = right + 1
+        else:
+            res_f.write(f'{int(label.data)}, {int(pred)}\n')
+            print(f'{int(label.data)}, {int(pred)}')
+
+    print(f'Accuracy: {right  / total}')
+    res_f.write(f'Right {right}\n')
+    res_f.write(f'Wrong {len(trainloader) - right}\n')
+    res_f.wirte(f'Accuracy: {right / total}\n')
+    res_f.close()
+
+    # save model parameters
+    torch.save(net.state_dict(), './save.pt')
     print('Finished training !!!')
