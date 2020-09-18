@@ -1,6 +1,6 @@
 # 2020 Fall Machine Learning Project
 
-> 명화 분류기 구현하기
+명화 분류기 구현하기
 
 ## 사용 기술
 
